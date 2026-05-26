@@ -1,0 +1,25 @@
+# Dependências Node.js
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# HTMLs gerados a partir de markdown
+*.html
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Volumes Docker (gerados localmente)
+postgres-data/
+portainer-data/
+pgadmin-data/
+
+# Cobertura de testes
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db

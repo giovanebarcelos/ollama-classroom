@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutor IA — FAPA</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ── Tela de boas-vindas ────────────────────────────────────────────── -->
+  <div id="welcome-screen" class="screen">
+    <div class="welcome-card">
+      <div class="logo">🤖</div>
+      <h1>Tutor de IA</h1>
+      <p class="subtitle">Seu assistente de Inteligência Artificial — FAPA</p>
+      <label for="name-input">Como você se chama?</label>
+      <input
+        id="name-input"
+        type="text"
+        placeholder="Digite seu nome..."
+        autocomplete="off"
+        maxlength="60"
+      />
+      <button id="start-btn">Começar →</button>
+      <p class="hint">Pressione Enter para começar</p>
+    </div>
+  </div>
+
+  <!-- ── Tela de chat ───────────────────────────────────────────────────── -->
+  <div id="chat-screen" class="screen hidden">
+    <header class="chat-header">
+      <div class="header-left">
+        <span class="header-icon">🤖</span>
+        <div>
+          <div class="header-title">Tutor de IA — FAPA</div>
+          <div class="header-subtitle" id="student-name-display"></div>
+        </div>
+      </div>
+      <button id="history-btn" title="Ver histórico de conversas">📋 Histórico</button>
+    </header>
+
+    <div id="messages" class="messages"></div>
+
+    <div class="input-area">
+      <textarea
+        id="message-input"
+        placeholder="Digite sua dúvida sobre IA... (Enter envia, Shift+Enter nova linha)"
+        rows="2"
+        maxlength="2000"
+      ></textarea>
+      <button id="send-btn" title="Enviar (Enter)">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Modal de histórico ─────────────────────────────────────────────── -->
+  <div id="history-modal" class="modal hidden">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2>📋 Histórico de Conversas</h2>
+        <button id="close-history-btn">✕</button>
+      </div>
+      <div id="history-content" class="modal-content"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

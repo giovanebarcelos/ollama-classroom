@@ -1,0 +1,109 @@
+services:
+
+  # ── Reverse Proxy ─────────────────────────────────────────────────────────
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    ports:
+      - "80:80"
+      - "8080:8080"    # dashboard direto em http://localhost:8080/dashboard/
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.localhost`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=web"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ── Banco de dados ────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    environment:
+      POSTGRES_DB: tutoria_db
+      POSTGRES_USER: tutor
+      POSTGRES_PASSWORD: tutor123
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tutor -d tutoria_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ── Gerenciador de containers ─────────────────────────────────────────────
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - portainer-data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
+      - "traefik.http.routers.portainer.entrypoints=web"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ── Interface web do PostgreSQL ───────────────────────────────────────────
+  pgadmin4:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@fapa.edu.br
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.pgadmin4.rule=Host(`pgadmin4.localhost`)"
+      - "traefik.http.routers.pgadmin4.entrypoints=web"
+      - "traefik.http.services.pgadmin4.loadbalancer.server.port=80"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  # ── Aplicação educacional ─────────────────────────────────────────────────
+  app:
+    build: ./app
+    container_name: tutor-ia
+    environment:
+      DATABASE_URL: postgresql://tutor:tutor123@postgres:5432/tutoria_db
+      OLLAMA_URL: http://host.docker.internal:11434
+      OLLAMA_MODEL: llama3.1:8b
+      PORT: 3000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"   # permite acessar o Ollama no host (Linux)
+    depends_on:
+      postgres:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.app.rule=Host(`app.localhost`)"
+      - "traefik.http.routers.app.entrypoints=web"
+      - "traefik.http.services.app.loadbalancer.server.port=3000"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  portainer-data:
+  pgadmin-data:
