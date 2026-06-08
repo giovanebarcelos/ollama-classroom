@@ -7,5 +7,6 @@ entryPoints:
     address: ":80"
 
 providers:
-  docker:
-    exposedByDefault: false   # só expõe serviços com label traefik.enable=true
+  file:
+    filename: /etc/traefik/dynamic.yml
+    watch: true

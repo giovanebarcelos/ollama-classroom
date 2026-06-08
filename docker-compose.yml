@@ -4,17 +4,16 @@ services:
   traefik:
     image: traefik:v3.0
     container_name: traefik
+    command:
+      - --entrypoints.web.address=:80
+      - --api.dashboard=true
     ports:
       - "80:80"
       - "8080:8080"    # dashboard direto em http://localhost:8080/dashboard/
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.traefik-dashboard.rule=Host(`traefik.localhost`)"
-      - "traefik.http.routers.traefik-dashboard.entrypoints=web"
-      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
     networks:
       - app-network
     restart: unless-stopped
@@ -46,11 +45,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - portainer-data:/data
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.portainer.rule=Host(`portainer.localhost`)"
-      - "traefik.http.routers.portainer.entrypoints=web"
-      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
     networks:
       - app-network
     restart: unless-stopped
@@ -67,11 +61,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.pgadmin4.rule=Host(`pgadmin4.localhost`)"
-      - "traefik.http.routers.pgadmin4.entrypoints=web"
-      - "traefik.http.services.pgadmin4.loadbalancer.server.port=80"
     networks:
       - app-network
     restart: unless-stopped
@@ -90,11 +79,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`app.localhost`)"
-      - "traefik.http.routers.app.entrypoints=web"
-      - "traefik.http.services.app.loadbalancer.server.port=3000"
     networks:
       - app-network
     restart: unless-stopped

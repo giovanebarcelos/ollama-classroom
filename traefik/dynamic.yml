@@ -1,0 +1,41 @@
+http:
+  routers:
+    app:
+      rule: Host(`localhost`) || Host(`app.localhost`)
+      entryPoints:
+        - web
+      service: app
+
+    pgadmin:
+      rule: Host(`pgadmin.localhost`)
+      entryPoints:
+        - web
+      service: pgadmin
+
+    portainer:
+      rule: Host(`portainer.localhost`)
+      entryPoints:
+        - web
+      service: portainer
+
+    traefik-dashboard:
+      rule: Host(`traefik.localhost`)
+      entryPoints:
+        - web
+      service: api@internal
+
+  services:
+    app:
+      loadBalancer:
+        servers:
+          - url: http://app:3000
+
+    pgadmin:
+      loadBalancer:
+        servers:
+          - url: http://pgadmin4:80
+
+    portainer:
+      loadBalancer:
+        servers:
+          - url: http://portainer:9000
